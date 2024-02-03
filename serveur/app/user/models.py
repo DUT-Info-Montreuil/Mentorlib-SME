@@ -11,6 +11,10 @@ class User(db.Model):
     date_created = db.Column(db.DateTime, default=db.func.current_timestamp())
     is_mentor = db.Column(db.Boolean, default=False)
 
+    courses = db.relationship("Course", back_populates="user")
+    course_registered_users = db.relationship("CourseRegisteredUser", back_populates="user")
+
+
 class Mentor(db.Model):
     mentor_id = db.Column(db.Integer, db.ForeignKey('user.id'), primary_key=True)
     student_id = db.Column(db.Integer, db.ForeignKey('user.id'), primary_key=True)

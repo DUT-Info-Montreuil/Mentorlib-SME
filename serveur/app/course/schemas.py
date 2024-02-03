@@ -8,6 +8,7 @@ class ResourceSchema(SQLAlchemyAutoSchema):
         model = Resource
         include_relationships = True
         load_instance = True
+
 class CourseSchema(SQLAlchemyAutoSchema):
 
     class Meta:
@@ -15,7 +16,7 @@ class CourseSchema(SQLAlchemyAutoSchema):
         include_fk = True
         load_instance = True
 
-    resource = fields.Nested(ResourceSchema)
+    resource = fields.Nested(ResourceSchema, exclude=("courses",))
     user = fields.Nested(UserSchema)
 
 class AskedCourseSchema(SQLAlchemyAutoSchema):

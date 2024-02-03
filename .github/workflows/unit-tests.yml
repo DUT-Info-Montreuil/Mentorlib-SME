@@ -10,7 +10,6 @@ jobs:
   build:
     runs-on: ubuntu-latest
     env: # We need to set the environment variables for the tests to run
-          # We can use the secrets we have stored in the repository, with secrets.<SECRET_NAME>
           # The secrets are stored in the repository settings
           FRONT_END_URL: ${{ secrets.FRONT_END_URL }}
           FLASK_DEBUG: ${{ secrets.FLASK_DEBUG }}

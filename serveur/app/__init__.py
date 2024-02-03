@@ -8,28 +8,29 @@ from flask_migrate import Migrate
 
 
 app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = ""
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = True
-app.config['SECRET'] = 'thisissecret'
+app.config["SQLALCHEMY_DATABASE_URI"] = "postgresql://mentorlib:+&&i$5Y+n,zG,4nzf?|W@5.135.143.117:5432/mentorlib"
+app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = True
+app.config["SECRET"] = "thisissecret"
 cors = CORS(app, resources={r"*": {"origins": "*"}})
 db = SQLAlchemy(app)
-migrate = Migrate(app, db) 
+migrate = Migrate(app, db)
 
 
 from .user.models import User
 from .course.models import Course, AskedCourse, Resource, CourseRegisteredUser
-  
+
 
 @app.after_request
 def after_request(response):
-    response.headers.add('Access-Control-Allow-Origin', '*')
-    response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization')
-    response.headers.add('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE')
+    response.headers.add("Access-Control-Allow-Origin", "*")
+    response.headers.add("Access-Control-Allow-Headers", "Content-Type,Authorization")
+    response.headers.add("Access-Control-Allow-Methods", "GET,PUT,POST,DELETE")
     return response
 
 
 with app.app_context():
     db.create_all()
+
 
 def token_required(f):
     @wraps(f)
@@ -43,24 +44,21 @@ def token_required(f):
 
         # return 401 if token is not passed
         if not token:
-            return jsonify({'message' : 'Token is missing'}), 401
-  
+            return jsonify({"message": "Token is missing"}), 401
+
         try:
             # decoding the payload to fetch the stored details
 
-            data = jwt.decode(token, app.config['SECRET'], algorithms=["HS256"])
-            current_user = User.query\
-                .filter_by(public_id = data['public_id'])\
-                .first()
+            data = jwt.decode(token, app.config["SECRET"], algorithms=["HS256"])
+            current_user = User.query.filter_by(public_id=data["public_id"]).first()
         except:
-            return jsonify({
-                'message' : 'Token is invalid !!'
-            }), 401
+            return jsonify({"message": "Token is invalid !!"}), 401
         # returns the current logged in users context to the routes
         print(current_user)
-        return  f(current_user, *args, **kwargs)
-  
+        return f(current_user, *args, **kwargs)
+
     return decorated
+
 
 from app.routes import user
 from app.routes import course

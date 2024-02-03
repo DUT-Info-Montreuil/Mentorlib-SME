@@ -19,7 +19,6 @@ def all_courses():
 
     schema = CourseSchema(many=True)
 
-
     return jsonify(schema.dump(allCourses))
 
 @app.route("/course/<id>", methods=["GET"])

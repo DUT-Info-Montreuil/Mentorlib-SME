@@ -29,3 +29,6 @@ class Resource(db.Model):
 class CourseRegisteredUser(db.Model):
     course_id = db.Column(db.Integer, db.ForeignKey('course.id'), primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), primary_key=True)
+
+    course = db.relationship("Course", backref=backref("course"))
+    user = db.relationship("User", backref=backref("user"))

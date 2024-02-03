@@ -28,6 +28,7 @@ dependencies = [
   "flask_migrate",
   "flask_expects_json",
   "setuptools",
+  "marshmallow_sqlalchemy",
   ]
 
 [project.optional-dependencies]

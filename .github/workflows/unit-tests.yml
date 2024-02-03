@@ -11,12 +11,9 @@ jobs:
     runs-on: ubuntu-latest
     env: # We need to set the environment variables for the tests to run
           # The secrets are stored in the repository settings
-          FRONT_END_URL: ${{ secrets.FRONT_END_URL }}
           FLASK_DEBUG: ${{ secrets.FLASK_DEBUG }}
           FLASK_HOST: ${{ secrets.FLASK_HOST }}
           FLASK_PORT: ${{ secrets.FLASK_PORT }}
-          CERTIFICATE_CRT_FOLDER: ${{ secrets.CERTIFICATE_CRT_FOLDER }}
-          CERTIFICATE_KEY_FOLDER: ${{ secrets.CERTIFICATE_KEY_FOLDER }}
 
     strategy:
       fail-fast: false

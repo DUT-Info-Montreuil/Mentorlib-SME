@@ -8,7 +8,7 @@ from flask_migrate import Migrate
 
 
 app = Flask(__name__)
-app.config["SQLALCHEMY_DATABASE_URI"] = ""
+app.config["SQLALCHEMY_DATABASE_URI"] = "postgresql://mentorlib:+&&i$5Y+n,zG,4nzf?|W@5.135.143.117:5432/mentorlib"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = True
 app.config["SECRET"] = "thisissecret"
 cors = CORS(app, resources={r"*": {"origins": "*"}})

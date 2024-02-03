@@ -1,6 +1,7 @@
 from marshmallow_sqlalchemy import SQLAlchemyAutoSchema, auto_field, fields
 
 from app.course.models import Course, AskedCourse, Resource
+from app.user.schemas import UserSchema
 
 class ResourceSchema(SQLAlchemyAutoSchema):
     class Meta:
@@ -16,6 +17,7 @@ class CourseSchema(SQLAlchemyAutoSchema):
         load_instance = True
 
     resource = fields.Nested(ResourceSchema)
+    user = fields.Nested(UserSchema)
 
 
 class AskedCourseSchema(SQLAlchemyAutoSchema):

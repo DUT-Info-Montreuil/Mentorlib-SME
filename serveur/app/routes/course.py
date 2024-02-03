@@ -12,12 +12,27 @@ from copy import deepcopy
 from datetime import datetime, timedelta
 
 @app.route("/course", methods=["GET"])
-def course():
+def all_courses():
     allCourses = Course.query\
     .order_by(Course.date.desc())\
     .all()
 
-    return jsonify(allCourses)
+    schema = CourseSchema(many=True)
+
+
+    return jsonify(schema.dump(allCourses))
+
+@app.route("/course/<id>", methods=["GET"])
+def course(id):
+    allCourses = Course.query\
+    .filter_by(id = id)\
+    .order_by(Course.date.desc())\
+    .first()
+
+    schema = CourseSchema(many=False)
+
+
+    return jsonify(schema.dump(allCourses))
 
 @app.route("/mycourse", methods=["GET"])
 @token_required

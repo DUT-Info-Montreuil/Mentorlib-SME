@@ -7,8 +7,8 @@ class Course(db.Model):
     date = db.Column(db.DateTime)
     duration = db.Column(db.Integer)
     remote = db.Column(db.Boolean, default=False)
-
     resource = db.relationship("Resource", backref=backref("asked_course"))
+    user = db.relationship("User", backref=backref("user"))
 
 
 class AskedCourse(db.Model):
@@ -20,7 +20,6 @@ class AskedCourse(db.Model):
     date = db.Column(db.DateTime)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     approved_date = db.Column(db.DateTime, default=None)
-
 
 class Resource(db.Model):
     id = db.Column(db.Integer, primary_key=True)

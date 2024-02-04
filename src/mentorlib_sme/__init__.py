@@ -1,3 +1,5 @@
+
+
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from functools import wraps
@@ -5,10 +7,13 @@ import jwt
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from flask_migrate import Migrate
+from sqlalchemy.ext.declarative import declarative_base
 
+Base = declarative_base()
+metadata = Base.metadata
 
 app = Flask(__name__)
-app.config["SQLALCHEMY_DATABASE_URI"] = "postgresql://mentorlib:+&&i$5Y+n,zG,4nzf?|W@5.135.143.117:5432/mentorlib"
+app.config["SQLALCHEMY_DATABASE_URI"] = 
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = True
 app.config["SECRET"] = "thisissecret"
 cors = CORS(app, resources={r"*": {"origins": "*"}})
@@ -16,8 +21,8 @@ db = SQLAlchemy(app)
 migrate = Migrate(app, db)
 
 
-from .user.models import User
-from .course.models import Course, AskedCourse, Resource, CourseRegisteredUser
+from mentorlib_sme.user.models import User
+from mentorlib_sme.course.models import Course, AskedCourse, Resource, CourseRegisteredUser
 
 
 @app.after_request
@@ -50,7 +55,7 @@ def token_required(f):
             # decoding the payload to fetch the stored details
 
             data = jwt.decode(token, app.config["SECRET"], algorithms=["HS256"])
-            current_user = User.query.filter_by(public_id=data["public_id"]).first()
+            current_user = db.session.query(User).filter_by(public_id=data["public_id"]).first()
         except:
             return jsonify({"message": "Token is invalid !!"}), 401
         # returns the current logged in users context to the routes
@@ -60,5 +65,8 @@ def token_required(f):
     return decorated
 
 
-from app.routes import user
-from app.routes import course
+from mentorlib_sme.routes.user import user_bp
+from mentorlib_sme.routes.course import course_bp
+
+app.register_blueprint(user_bp)
+app.register_blueprint(course_bp)

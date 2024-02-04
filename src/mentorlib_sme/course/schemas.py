@@ -1,7 +1,7 @@
 from marshmallow_sqlalchemy import SQLAlchemyAutoSchema, fields
 
-from app.course.models import Course, AskedCourse, Resource, CourseRegisteredUser
-from app.user.schemas import UserSchema
+from mentorlib_sme.course.models import Course, AskedCourse, Resource, CourseRegisteredUser
+from mentorlib_sme.user.schemas import UserSchema
 
 class ResourceSchema(SQLAlchemyAutoSchema):
     class Meta:

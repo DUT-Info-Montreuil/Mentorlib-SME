@@ -1,6 +1,6 @@
 [project]
 name = "mentorlib-sme"
-version = "0.0.0"
+version = "0.1.0"
 description = "Backend of Mentorlib"
 authors = [
     {name = "Kamel OURZIK"},
@@ -29,6 +29,7 @@ dependencies = [
   "flask_expects_json",
   "setuptools",
   "marshmallow_sqlalchemy",
+  "alembic"
   ]
 
 [project.optional-dependencies]
@@ -77,3 +78,6 @@ disable=[]
 [tool.bandit]
 targets = ["app"]
 exclude_dirs = []
+
+[tool.packages]
+include = [{from="src", include=["mentorlib_sme"]}]

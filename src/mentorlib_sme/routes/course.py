@@ -1,19 +1,21 @@
-from flask import jsonify, request, make_response, g
-from app import app, db, token_required
+from flask import jsonify, request, make_response, g, Blueprint
+from mentorlib_sme import app, db, token_required
 from sqlalchemy import and_
 from flask_expects_json import expects_json, ValidationError
-from app.course.validators import askCourse
-from app.course.models import AskedCourse, Course, Resource
-from app.user.models import User
-from app.course.schemas import CourseSchema, ResourceSchema, AskedCourseSchema
+from mentorlib_sme.course.validators import askCourse
+from mentorlib_sme.course.models import AskedCourse, Course, Resource
+from mentorlib_sme.user.models import User
+from mentorlib_sme.course.schemas import CourseSchema, ResourceSchema, AskedCourseSchema
 
 from copy import deepcopy
 
 from datetime import datetime, timedelta
 
-@app.route("/course", methods=["GET"])
+course_bp = Blueprint('course', __name__)
+
+@course_bp.route("/course", methods=["GET"])
 def all_courses():
-    allCourses = Course.query\
+    allCourses = db.session.query(Course)\
     .order_by(Course.date.desc())\
     .all()
 
@@ -21,9 +23,9 @@ def all_courses():
 
     return jsonify(schema.dump(allCourses))
 
-@app.route("/course/<id>", methods=["GET"])
+@course_bp.route("/course/<id>", methods=["GET"])
 def course(id):
-    allCourses = Course.query\
+    allCourses = db.session.query(Course)\
     .filter_by(id = id)\
     .order_by(Course.date.desc())\
     .first()
@@ -33,10 +35,10 @@ def course(id):
 
     return jsonify(schema.dump(allCourses))
 
-@app.route("/mycourse", methods=["GET"])
+@course_bp.route("/mycourse", methods=["GET"])
 @token_required
 def my_course(f):
-    allCourses = Course.query\
+    allCourses = db.session.query(Course)\
     .filter_by(user_id = f.id)\
     .order_by(Course.date.desc())\
     .all()
@@ -45,7 +47,7 @@ def my_course(f):
     return jsonify(schema.dump(allCourses))
 
 
-@app.route("/course/ask", methods=['GET'])
+@course_bp.route("/course/ask", methods=['GET'])
 @token_required
 def asked_course(f):
     allAsked = db.session.query(AskedCourse, Resource, User).join(Resource, AskedCourse.resource_id == Resource.id).join(User, AskedCourse.user_id == User.id).filter(AskedCourse.approved_date == None).all()
@@ -61,7 +63,7 @@ def asked_course(f):
 
     return jsonify(results)
 
-@app.route("/course/ask", methods=["POST"])
+@course_bp.route("/course/ask", methods=["POST"])
 @token_required
 @expects_json(askCourse)
 def ask_course(f):
@@ -83,11 +85,14 @@ def ask_course(f):
         print(e)
         return make_response(jsonify({'message': 'Error'}), 500)
     
-@app.route("/course/accept/<id>", methods=["POST"])
+@course_bp.route("/course/accept/<id>", methods=["POST"])
 @token_required
 def accept_course(f, id):
     try:
-        askedCourse = AskedCourse.query.filter(and_(AskedCourse.id == id, AskedCourse.approved_date == None)).first()
+        askedCourse = db.session.query(AskedCourse)\
+        .filter(and_(AskedCourse.id == id, AskedCourse.approved_date == None))\
+        .first()
+
         if askedCourse:
             askedCourse.approved_date = datetime.now()
             db.session.commit()
@@ -108,9 +113,9 @@ def accept_course(f, id):
         return make_response(jsonify({'message': 'Error'}), 500)
     
 
-@app.route("/resource", methods=["GET"])
+@course_bp.route("/resource", methods=["GET"])
 def resource():
-    allResources = Resource.query \
+    allResources = db.session.query(Resource) \
     .order_by(Resource.name.asc()) \
     .all()
 
@@ -122,7 +127,7 @@ def resource():
 
     return jsonify(results)
 
-@app.route("/test", methods=['GET'])
+@course_bp.route("/test", methods=['GET'])
 def test():
     pass
     # course = Course(

@@ -18,6 +18,7 @@ class CourseSchema(SQLAlchemyAutoSchema):
 
     resource = fields.Nested(ResourceSchema, exclude=("courses",))
     user = fields.Nested(UserSchema)
+    course_registered_users = fields.Nested("CourseRegisteredUserSchema", many=True)
 
 class AskedCourseSchema(SQLAlchemyAutoSchema):
     class Meta:
@@ -28,3 +29,5 @@ class CourseRegisteredUserSchema(SQLAlchemyAutoSchema):
         model = CourseRegisteredUser
         include_relationships = True
         load_instance = True
+
+    user = fields.Nested(UserSchema)

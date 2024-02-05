@@ -69,7 +69,7 @@ def register():
     password = data.get('password')
   
     # checking for existing user
-    user = User.query\
+    user = db.session.query(User)\
         .filter_by(email = email)\
         .first()
     if not user:

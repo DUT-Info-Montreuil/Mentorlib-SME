@@ -1,16 +1,16 @@
-from app import app, db
+from mentorlib_sme import app, db, token_required
 import uuid
-from flask import jsonify, request, make_response, g
+from flask import jsonify, request, make_response, g, Blueprint
 from werkzeug.security import generate_password_hash, check_password_hash
-from app.user.models import User
-from app import token_required
+from mentorlib_sme.user.models import User
 from datetime import datetime, timedelta
 import jwt
 from flask_expects_json import expects_json, ValidationError
+from mentorlib_sme.user.validators import userlogin
 
-from app.user.validators import userlogin 
+user_bp = Blueprint('user', __name__)
 
-@app.route('/me')
+@user_bp.route('/me')
 @token_required
 def index(f):
     return jsonify({
@@ -21,14 +21,13 @@ def index(f):
         'is_mentor' : f.is_mentor
     })
 
-@app.route('/login', methods=['POST'])
+@user_bp.route('/login', methods=['POST'])
 @expects_json(userlogin)
 def login():
     try:
-        user = User.query\
+        user = db.session.query(User)\
                 .filter_by(email = g.data.get('email'))\
                 .first()
-        
         if not user:
             return make_response(
                 jsonify({"message":'Could not verify'}),
@@ -60,7 +59,7 @@ def login():
                 {'WWW-Authenticate': 'Basic realm ="Login required"'}
             )
 
-@app.route('/register', methods=['POST'])
+@user_bp.route('/register', methods=['POST'])
 def register():
     # creates a dictionary of the form data
     data = request.form
@@ -70,7 +69,7 @@ def register():
     password = data.get('password')
   
     # checking for existing user
-    user = User.query\
+    user = db.session.query(User)\
         .filter_by(email = email)\
         .first()
     if not user:

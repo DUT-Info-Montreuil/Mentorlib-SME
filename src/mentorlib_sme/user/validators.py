@@ -1,8 +1,17 @@
 userlogin = {
-    'type':'object',
-    'properties':{
-        "email": { 'type': 'string' },
-        "password": { 'type': 'string' }
+    "type": "object",
+    "properties": {"email": {"type": "string"}, "password": {"type": "string"}},
+    "required": ["email", "password"],
+}
+
+userupdate = {
+    "type": "object",
+    "properties": {
+        "firstname": {"type": "string"},
+        "lastname": {"type": "string"},
+        "email": {"type": "string"},
+        "password": {"type": "string"},
+        "student_year": {"type": "integer"},
     },
-    'required': ['email', 'password']
+    "required": ["firstname", "lastname", "email", "password", "student_year"],
 }

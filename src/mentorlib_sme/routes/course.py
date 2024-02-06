@@ -5,7 +5,7 @@ from flask_expects_json import expects_json, ValidationError
 from mentorlib_sme.course.validators import askCourse
 from mentorlib_sme.course.models import AskedCourse, Course, Resource
 from mentorlib_sme.user.models import User
-from mentorlib_sme.course.schemas import CourseSchema, ResourceSchema, AskedCourseSchema
+from mentorlib_sme.course.schemas import CourseSchema, ResourceSchema, AskedCourseSchema, CourseRegisteredUser
 
 from copy import deepcopy
 
@@ -126,3 +126,46 @@ def resource():
         results.append(val)
 
     return jsonify(results)
+
+@course_bp.route("/register/<id>", methods=["POST"])
+@token_required
+def register_course(f, id):
+    try:
+        course = db.session.query(Course)\
+        .filter_by(id = id)\
+        .first()
+
+        if course:
+            courseRegisteredUser = db.session.query(CourseRegisteredUser)\
+            .filter(and_(CourseRegisteredUser.course_id == id, CourseRegisteredUser.user_id == f.id))\
+            .first()
+
+            if not courseRegisteredUser:
+                courseRegisteredUser = CourseRegisteredUser(
+                    course_id = id,
+                    user_id = f.id
+                )
+                db.session.add(courseRegisteredUser)
+                db.session.commit()
+
+        return make_response(jsonify({'message': 'Success'}), 200)
+    except Exception as e:
+        print(e)
+        return make_response(jsonify({'message': 'Error'}), 500)
+    
+@course_bp.route("/unregister/<id>", methods=["POST"])
+@token_required
+def unregister_course(f, id):
+    try:
+        courseRegisteredUser = db.session.query(CourseRegisteredUser)\
+        .filter(and_(CourseRegisteredUser.course_id == id, CourseRegisteredUser.user_id == f.id))\
+        .first()
+
+        if courseRegisteredUser:
+            db.session.delete(courseRegisteredUser)
+            db.session.commit()
+
+        return make_response(jsonify({'message': 'Success'}), 200)
+    except Exception as e:
+        print(e)
+        return make_response(jsonify({'message': 'Error'}), 500)

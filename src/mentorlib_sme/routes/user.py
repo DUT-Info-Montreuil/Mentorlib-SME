@@ -18,7 +18,8 @@ def index(f):
         'firstname' : f.firstname,
         'lastname' : f.lastname,
         'student_year' : f.student_year,
-        'is_mentor' : f.is_mentor
+        'is_mentor' : f.is_mentor,
+        'id': f.id
     })
 
 @user_bp.route('/login', methods=['POST'])

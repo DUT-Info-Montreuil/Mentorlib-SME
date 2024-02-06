@@ -1,7 +1,6 @@
 from mentorlib_sme import app
 import click
 
-
 @click.command()
 @click.option("--debug", is_flag=True, help="Enable debug mode.")
 

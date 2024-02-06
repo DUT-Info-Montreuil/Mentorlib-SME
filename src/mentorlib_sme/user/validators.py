@@ -6,3 +6,15 @@ userlogin = {
     },
     'required': ['email', 'password']
 }
+
+userupdate = {
+    "type": "object",
+    "properties": {
+        "firstname": {"type": "string"},
+        "lastname": {"type": "string"},
+        "email": {"type": "string"},
+        "password": {"type": "string"},
+        "student_year": {"type": "integer"},
+    },
+    "required": ["firstname", "lastname", "email", "password", "student_year"],
+}

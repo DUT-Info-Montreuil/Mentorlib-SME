@@ -6,9 +6,9 @@ from mentorlib_sme.user.models import User
 from datetime import datetime, timedelta
 import jwt
 from flask_expects_json import expects_json, ValidationError
-from mentorlib_sme.user.validators import userlogin
+from mentorlib_sme.user.validators import userlogin, userupdate
 
-user_bp = Blueprint('user', __name__)
+user_bp = Blueprint('user', __name__, url_prefix='/user')
 
 @user_bp.route('/me')
 @token_required
@@ -18,7 +18,8 @@ def index(f):
         'firstname' : f.firstname,
         'lastname' : f.lastname,
         'student_year' : f.student_year,
-        'is_mentor' : f.is_mentor
+        'is_mentor' : f.is_mentor,
+        'id': f.id
     })
 
 @user_bp.route('/login', methods=['POST'])
@@ -60,13 +61,11 @@ def login():
             )
 
 @user_bp.route('/register', methods=['POST'])
+@expects_json(userlogin)
 def register():
-    # creates a dictionary of the form data
-    data = request.form
-  
-    # gets name, email and password
-    email = data.get('email')
-    password = data.get('password')
+
+    email = g.data.get('email')
+    password = g.data.get('password')
   
     # checking for existing user
     user = db.session.query(User)\
@@ -91,16 +90,26 @@ def register():
         # returns 202 if user already exists
         return make_response('User already exists. Please Log in.', 202)
     
-# @app.route("/create")
-# def create():
-#     user = User()
-#     user.email = 'kourzik@iut.univ-paris8.fr'
-#     user.password = generate_password_hash('1234')
-#     user.firstname = 'Kamel'
-#     user.lastname = 'Ourzik'
-#     user.is_mentor = True
+@user_bp.route("/profile/update", methods=["PUT"])
+@token_required
+@expects_json(userupdate)  # Assure que les données JSON attendues sont présentes dans la requête
+def update_profile(current_user):
+    """Mise à jour du profil utilisateur"""
+    try:
 
-#     db.session.add(user)
-#     db.session.commit()
+        updated_data = g.data
 
-#     return make_response('Successfully created.', 201)
+        # Mise à jour donnees utilisateur
+        current_user.email = updated_data.get("email", current_user.email)
+        current_user.firstname = updated_data.get("firstname", current_user.firstname)
+        current_user.lastname = updated_data.get("lastname", current_user.lastname)
+        current_user.password = generate_password_hash(updated_data.get("password", current_user.password))
+        current_user.student_year = updated_data.get("student_year", current_user.student_year)
+
+        # Mise à jour en base de données
+        db.session.commit()
+
+        return jsonify({"message": "Profile updated successfully"})
+
+    except ValidationError:
+        return make_response(jsonify({"message": "Could not update profile"}), 400)

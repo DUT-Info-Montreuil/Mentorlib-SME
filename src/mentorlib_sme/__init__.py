@@ -71,3 +71,6 @@ from mentorlib_sme.routes.course import course_bp
 
 app.register_blueprint(user_bp)
 app.register_blueprint(course_bp)
+
+with app.app_context():
+    Base.metadata.create_all(db.engine)

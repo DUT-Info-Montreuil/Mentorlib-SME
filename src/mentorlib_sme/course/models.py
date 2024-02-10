@@ -34,6 +34,7 @@ class Resource(Base):
     description = db.Column(db.String(255))
     year = db.Column(db.Integer)
 
+
 class CourseRegisteredUser(Base):
     __tablename__ = 'course_registered_user'
 

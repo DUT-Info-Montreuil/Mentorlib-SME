@@ -6,7 +6,7 @@ from mentorlib_sme.user.models import User
 from datetime import datetime, timedelta
 import jwt
 from flask_expects_json import expects_json, ValidationError
-from mentorlib_sme.user.validators import userlogin, userupdate
+from mentorlib_sme.user.validators import userlogin, userupdate, userregister
 
 user_bp = Blueprint('user', __name__, url_prefix='/user')
 
@@ -18,7 +18,8 @@ def index(f):
         'firstname' : f.firstname,
         'lastname' : f.lastname,
         'student_year' : f.student_year,
-        'is_mentor' : f.is_mentor
+        'is_mentor' : f.is_mentor,
+        'id': f.id
     })
 
 @user_bp.route('/login', methods=['POST'])
@@ -29,11 +30,7 @@ def login():
                 .filter_by(email = g.data.get('email'))\
                 .first()
         if not user:
-            return make_response(
-                jsonify({"message":'Could not verify'}),
-                401,
-                {'WWW-Authenticate': 'Basic realm ="User does not exist'}
-            )
+            return make_response(jsonify({"message": "Wrong login or password"}), 401)
         
         if check_password_hash(user.password, g.data.get("password")):
             # generates the JWT Token
@@ -53,18 +50,16 @@ def login():
             {'WWW-Authenticate' : 'Basic realm ="Wrong Password"'}
         )
     except ValidationError as ve:
-        return make_response(
-                jsonify({"message":'Could not verify'}),
-                401,
-                {'WWW-Authenticate': 'Basic realm ="Login required"'}
-            )
+        return make_response(jsonify({"message": "Wrong login or password"}), 401)
 
 @user_bp.route('/register', methods=['POST'])
-@expects_json(userlogin)
+@expects_json(userregister)
 def register():
 
     email = g.data.get('email')
     password = g.data.get('password')
+    firstname = g.data.get('firstname')
+    lastname = g.data.get('lastname')
   
     # checking for existing user
     user = db.session.query(User)\
@@ -78,6 +73,8 @@ def register():
             user = User(
                 public_id = str(uuid.uuid4()),
                 email = email,
+                firstname = firstname,
+                lastname = lastname,
                 password = generate_password_hash(password)
             )
             # insert user

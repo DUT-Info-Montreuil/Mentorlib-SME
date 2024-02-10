@@ -1,19 +1,19 @@
 from flask import jsonify, request, make_response, g, Blueprint
-from mentorlib_sme import app, db, token_required
+from mentorlib_sme import db, token_required
 from sqlalchemy import and_
 from flask_expects_json import expects_json, ValidationError
 from mentorlib_sme.course.validators import askCourse
 from mentorlib_sme.course.models import AskedCourse, Course, Resource
 from mentorlib_sme.user.models import User
-from mentorlib_sme.course.schemas import CourseSchema, ResourceSchema, AskedCourseSchema
+from mentorlib_sme.course.schemas import CourseSchema, ResourceSchema, AskedCourseSchema, CourseRegisteredUser
 
 from copy import deepcopy
 
 from datetime import datetime, timedelta
 
-course_bp = Blueprint('course', __name__)
+course_bp = Blueprint('course', __name__, url_prefix='/course')
 
-@course_bp.route("/course", methods=["GET"])
+@course_bp.route("/courses", methods=["GET"])
 def all_courses():
     allCourses = db.session.query(Course)\
     .order_by(Course.date.desc())\
@@ -23,7 +23,7 @@ def all_courses():
 
     return jsonify(schema.dump(allCourses))
 
-@course_bp.route("/course/<id>", methods=["GET"])
+@course_bp.route("/<id>", methods=["GET"])
 def course(id):
     allCourses = db.session.query(Course)\
     .filter_by(id = id)\
@@ -47,7 +47,7 @@ def my_course(f):
     return jsonify(schema.dump(allCourses))
 
 
-@course_bp.route("/course/ask", methods=['GET'])
+@course_bp.route("/ask", methods=['GET'])
 @token_required
 def asked_course(f):
     allAsked = db.session.query(AskedCourse, Resource, User).join(Resource, AskedCourse.resource_id == Resource.id).join(User, AskedCourse.user_id == User.id).filter(AskedCourse.approved_date == None).all()
@@ -63,7 +63,7 @@ def asked_course(f):
 
     return jsonify(results)
 
-@course_bp.route("/course/ask", methods=["POST"])
+@course_bp.route("/ask", methods=["POST"])
 @token_required
 @expects_json(askCourse)
 def ask_course(f):
@@ -85,7 +85,7 @@ def ask_course(f):
         print(e)
         return make_response(jsonify({'message': 'Error'}), 500)
     
-@course_bp.route("/course/accept/<id>", methods=["POST"])
+@course_bp.route("/accept/<id>", methods=["POST"])
 @token_required
 def accept_course(f, id):
     try:
@@ -127,129 +127,45 @@ def resource():
 
     return jsonify(results)
 
-@course_bp.route("/test", methods=['GET'])
-def test():
-    pass
-    # course = Course(
-    #     resource_id = 1,
-    #     user_id = 1,
-    #     date = datetime.now(),
-    #     duration = 2,
-    #     remote = False
+@course_bp.route("/register/<id>", methods=["POST"])
+@token_required
+def register_course(f, id):
+    try:
+        course = db.session.query(Course)\
+        .filter_by(id = id)\
+        .first()
 
-    # )
+        if course:
+            courseRegisteredUser = db.session.query(CourseRegisteredUser)\
+            .filter(and_(CourseRegisteredUser.course_id == id, CourseRegisteredUser.user_id == f.id))\
+            .first()
 
-    # db.session.add(course)
-    # db.session.commit()
- 
-    
-    # resource = Resource(
-    #                 name = "R1.01 - Initiation au développement",
-    #                 description = "",
-    #                 year = 1
-    #             )
-    #             # insert user
-    # db.session.add(resource)
-    # db.session.commit()
-    
-    # resource = Resource(
-    #                 name = "R1.02 - Développement d'interfaces web",
-    #                 description = "",
-    #                 year = 1
-    #             )
-    #             # insert user
-    # db.session.add(resource)
-    # db.session.commit()
-    
-    # resource = Resource(
-    #                 name = "R1.03 - Introduction à l'Architecture des Ordinateurs",
-    #                 description = "",
-    #                 year = 1
-    #             )
-    #             # insert user
-    # db.session.add(resource)
-    # db.session.commit()
-    
-    # resource = Resource(
-    #                 name = "R1.04 - Introduction aux Systèmes d'exploitation",
-    #                 description = "",
-    #                 year = 1
-    #             )
-    #             # insert user
-    # db.session.add(resource)
-    # db.session.commit()
-    
-    # resource = Resource(
-    #                 name = "R1.05 - Introduction aux bases de données SQL",
-    #                 description = "",
-    #                 year = 1
-    #             )
-    #             # insert user
-    # db.session.add(resource)
-    # db.session.commit()
-    
-    # resource = Resource(
-    #                 name = "R1.06 - Mathématiques Discrètes",
-    #                 description = "",
-    #                 year = 1
-    #             )
-    #             # insert user
-    # db.session.add(resource)
-    # db.session.commit()
-    
-    # resource = Resource(
-    #                 name = "R1.07 - Outils Mathématiques Fondamentaux",
-    #                 description = "",
-    #                 year = 1
-    #             )
-    #             # insert user
-    # db.session.add(resource)
-    # db.session.commit()
-    
-    # resource = Resource(
-    #                 name = "R1.08 - Gestion de projet et des organisations",
-    #                 description = "",
-    #                 year = 1
-    #             )
-    #             # insert user
-    # db.session.add(resource)
-    # db.session.commit()
-    
-    # resource = Resource(
-    #                 name = "R1.09 - Économie durable et numérique",
-    #                 description = "",
-    #                 year = 1
-    #             )
-    #             # insert user
-    # db.session.add(resource)
-    # db.session.commit()
-    
-    # resource = Resource(
-    #                 name = "R1.10 - Anglais Technique",
-    #                 description = "",
-    #                 year = 1
-    #             )
-    #             # insert user
-    # db.session.add(resource)
-    # db.session.commit()
-    
-    # resource = Resource(
-    #                 name = "R1.11 - Bases de la Communication",
-    #                 description = "",
-    #                 year = 1
-    #             )
-    #             # insert user
-    # db.session.add(resource)
-    # db.session.commit()
-    
-    # resource = Resource(
-    #                 name = "R1.12 - Projet professionnel et personnel",
-    #                 description = "",
-    #                 year = 1
-    #             )
-    #             # insert user
-    # db.session.add(resource)
-    # db.session.commit()
-    
+            if not courseRegisteredUser:
+                courseRegisteredUser = CourseRegisteredUser(
+                    course_id = id,
+                    user_id = f.id
+                )
+                db.session.add(courseRegisteredUser)
+                db.session.commit()
 
-    # return make_response(jsonify({'message': 'Success'}), 200)
+        return make_response(jsonify({'message': 'Success'}), 200)
+    except Exception as e:
+        print(e)
+        return make_response(jsonify({'message': 'Error'}), 500)
+    
+@course_bp.route("/unregister/<id>", methods=["POST"])
+@token_required
+def unregister_course(f, id):
+    try:
+        courseRegisteredUser = db.session.query(CourseRegisteredUser)\
+        .filter(and_(CourseRegisteredUser.course_id == id, CourseRegisteredUser.user_id == f.id))\
+        .first()
+
+        if courseRegisteredUser:
+            db.session.delete(courseRegisteredUser)
+            db.session.commit()
+
+        return make_response(jsonify({'message': 'Success'}), 200)
+    except Exception as e:
+        print(e)
+        return make_response(jsonify({'message': 'Error'}), 500)

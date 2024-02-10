@@ -6,14 +6,15 @@ from flask import Flask, request, jsonify
 from flask_cors import CORS
 from flask_migrate import Migrate
 from sqlalchemy.ext.declarative import declarative_base
+from mentorlib_sme.settings import settings
 
 Base = declarative_base()
 metadata = Base.metadata
 
 app = Flask(__name__)
-app.config["SQLALCHEMY_DATABASE_URI"] =
+app.config["SQLALCHEMY_DATABASE_URI"] = f"postgresql://{settings.pg_user}:{settings.pg_password.get_secret_value()}@{settings.pg_host}/{settings.pg_db}"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = True
-app.config["SECRET"] = "thisissecret"
+app.config["SECRET"] = settings.flask_secret.get_secret_value()
 cors = CORS(app, resources={r"*": {"origins": "*"}})
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)

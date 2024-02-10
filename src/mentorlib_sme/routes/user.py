@@ -8,21 +8,20 @@ import jwt
 from flask_expects_json import expects_json, ValidationError
 from mentorlib_sme.user.validators import userlogin, userupdate
 
-user_bp = Blueprint("user", __name__)
+user_bp = Blueprint('user', __name__, url_prefix='/user')
 
 
 @user_bp.route("/me")
 @token_required
 def index(f):
-    return jsonify(
-        {
-            "email": f.email,
-            "firstname": f.firstname,
-            "lastname": f.lastname,
-            "student_year": f.student_year,
-            "is_mentor": f.is_mentor,
-        }
-    )
+    return jsonify({
+        'email' : f.email,
+        'firstname' : f.firstname,
+        'lastname' : f.lastname,
+        'student_year' : f.student_year,
+        'is_mentor' : f.is_mentor,
+        'id': f.id
+    })
 
 
 @user_bp.route("/login", methods=["POST"])
@@ -56,16 +55,13 @@ def login():
             jsonify({"message": "Could not verify"}), 401, {"WWW-Authenticate": 'Basic realm ="Login required"'}
         )
 
-
-@user_bp.route("/register", methods=["POST"])
+@user_bp.route('/register', methods=['POST'])
+@expects_json(userlogin)
 def register():
-    # creates a dictionary of the form data
-    data = request.form
 
-    # gets name, email and password
-    email = data.get("email")
-    password = data.get("password")
-
+    email = g.data.get('email')
+    password = g.data.get('password')
+  
     # checking for existing user
     user = db.session.query(User).filter_by(email=email).first()
     if not user:
@@ -81,9 +77,8 @@ def register():
         return make_response("Successfully registered.", 201)
     else:
         # returns 202 if user already exists
-        return make_response("User already exists. Please Log in.", 202)
-
-
+        return make_response('User already exists. Please Log in.', 202)
+    
 @user_bp.route("/profile/update", methods=["PUT"])
 @token_required
 @expects_json(userupdate)  # Assure que les données JSON attendues sont présentes dans la requête
@@ -107,18 +102,3 @@ def update_profile(current_user):
 
     except ValidationError:
         return make_response(jsonify({"message": "Could not update profile"}), 400)
-
-
-# @app.route("/create")
-# def create():
-#     user = User()
-#     user.email = 'kourzik@iut.univ-paris8.fr'
-#     user.password = generate_password_hash('1234')
-#     user.firstname = 'Kamel'
-#     user.lastname = 'Ourzik'
-#     user.is_mentor = True
-
-#     db.session.add(user)
-#     db.session.commit()
-
-#     return make_response('Successfully created.', 201)

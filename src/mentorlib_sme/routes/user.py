@@ -10,7 +10,8 @@ from mentorlib_sme.user.validators import userlogin, userupdate, userregister
 
 user_bp = Blueprint('user', __name__, url_prefix='/user')
 
-@user_bp.route('/me')
+
+@user_bp.route("/me")
 @token_required
 def index(f):
     return jsonify({
@@ -20,34 +21,34 @@ def index(f):
         'student_year' : f.student_year,
         'is_mentor' : f.is_mentor,
         'id': f.id
+        'is_mentor' : f.is_mentor,
+        'id': f.id
     })
 
-@user_bp.route('/login', methods=['POST'])
+
+@user_bp.route("/login", methods=["POST"])
 @expects_json(userlogin)
 def login():
     try:
-        user = db.session.query(User)\
-                .filter_by(email = g.data.get('email'))\
-                .first()
+        user = db.session.query(User).filter_by(email=g.data.get("email")).first()
         if not user:
             return make_response(jsonify({"message": "Wrong login or password"}), 401)
         
         if check_password_hash(user.password, g.data.get("password")):
             # generates the JWT Token
-            token = jwt.encode({
-                'public_id' : user.public_id,
-                'exp' : datetime.utcnow() + timedelta(minutes=45)
-                }, app.config['SECRET'], "HS256")
+            token = jwt.encode(
+                {"public_id": user.public_id, "exp": datetime.utcnow() + timedelta(minutes=45)},
+                app.config["SECRET"],
+                "HS256",
+            )
 
             # redirect to home page
-            resp = make_response(jsonify({'token' : token}), 200)
-            
+            resp = make_response(jsonify({"token": token}), 200)
+
             return resp
         # returns 403 if password is wrong
         return make_response(
-            jsonify({"message":'Could not verify'}),
-            403,
-            {'WWW-Authenticate' : 'Basic realm ="Wrong Password"'}
+            jsonify({"message": "Could not verify"}), 403, {"WWW-Authenticate": 'Basic realm ="Wrong Password"'}
         )
     except ValidationError as ve:
         return make_response(jsonify({"message": "Wrong login or password"}), 401)
@@ -62,13 +63,11 @@ def register():
     lastname = g.data.get('lastname')
   
     # checking for existing user
-    user = db.session.query(User)\
-        .filter_by(email = email)\
-        .first()
+    user = db.session.query(User).filter_by(email=email).first()
     if not user:
         # database ORM object
         if not password or not email:
-            return make_response('Password and email are required.', 400)
+            return make_response("Password and email are required.", 400)
         else:
             user = User(
                 public_id = str(uuid.uuid4()),
@@ -80,8 +79,8 @@ def register():
             # insert user
             db.session.add(user)
             db.session.commit()
-  
-        return make_response('Successfully registered.', 201)
+
+        return make_response("Successfully registered.", 201)
     else:
         # returns 202 if user already exists
         return make_response('User already exists. Please Log in.', 202)

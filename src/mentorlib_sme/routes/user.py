@@ -21,8 +21,6 @@ def index(f):
         'student_year' : f.student_year,
         'is_mentor' : f.is_mentor,
         'id': f.id
-        'is_mentor' : f.is_mentor,
-        'id': f.id
     })
 
 

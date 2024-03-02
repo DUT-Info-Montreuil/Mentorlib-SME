@@ -47,6 +47,7 @@ class CourseRegisteredUser(Base):
     course_id = db.Column(db.Integer, db.ForeignKey('course.id'), primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), primary_key=True)
     user_level = db.Column(db.Integer, default=0)
+    description = db.Column(db.String(255), default=None)
 
     course = db.relationship("Course", back_populates="course_registered_users")
     user = db.relationship("User", back_populates="course_registered_users")

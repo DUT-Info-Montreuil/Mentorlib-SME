@@ -34,9 +34,11 @@ class Resource(Base):
     __tablename__ = 'resource'
     
     id = db.Column(db.Integer, primary_key=True)
+    shortname = db.Column(db.String(10))
     name = db.Column(db.String(80))
     description = db.Column(db.String(255))
     year = db.Column(db.Integer)
+    banner = db.Column(db.String(255))
 
 
 class CourseRegisteredUser(Base):

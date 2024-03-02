@@ -19,7 +19,6 @@ cors = CORS(app, resources={r"*": {"origins": "*"}})
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
 
-
 from mentorlib_sme.user.models import User
 from mentorlib_sme.course.models import Course, AskedCourse, Resource, CourseRegisteredUser
 

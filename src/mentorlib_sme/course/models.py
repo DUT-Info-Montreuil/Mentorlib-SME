@@ -26,13 +26,20 @@ class AskedCourse(Base):
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     approved_date = db.Column(db.DateTime, default=None)
 
+    resource = db.relationship("Resource", backref=backref("asked_courses", lazy='dynamic'))
+    user = db.relationship("User", back_populates="asked_courses")
+
+
 class Resource(Base):
     __tablename__ = 'resource'
     
     id = db.Column(db.Integer, primary_key=True)
+    shortname = db.Column(db.String(10))
     name = db.Column(db.String(80))
     description = db.Column(db.String(255))
     year = db.Column(db.Integer)
+    banner = db.Column(db.String(255))
+
 
 class CourseRegisteredUser(Base):
     __tablename__ = 'course_registered_user'

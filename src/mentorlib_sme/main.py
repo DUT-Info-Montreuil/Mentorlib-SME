@@ -1,4 +1,4 @@
-from mentorlib_sme import app
+from mentorlib_sme import app, Base, db
 import click
 
 @click.command()

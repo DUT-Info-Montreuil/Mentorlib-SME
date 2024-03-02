@@ -26,6 +26,10 @@ class AskedCourse(Base):
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     approved_date = db.Column(db.DateTime, default=None)
 
+    resource = db.relationship("Resource", backref=backref("asked_courses", lazy='dynamic'))
+    user = db.relationship("User", back_populates="asked_courses")
+
+
 class Resource(Base):
     __tablename__ = 'resource'
     

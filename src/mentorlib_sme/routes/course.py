@@ -50,18 +50,9 @@ def my_course(f):
 @course_bp.route("/ask", methods=['GET'])
 @token_required
 def asked_course(f):
-    allAsked = db.session.query(AskedCourse, Resource, User).join(Resource, AskedCourse.resource_id == Resource.id).join(User, AskedCourse.user_id == User.id).filter(AskedCourse.approved_date == None).all()
-    results = []
-    for askedCourse, resource, student in allAsked:
-        val = deepcopy(askedCourse.__dict__)
-        val["resource"] = {"name": resource.name, "year":resource.year}
-        val["student"] = {"firstname": student.firstname or "Inconnu", "lastname":student.lastname or "Inconnu", "year": student.student_year}
-        del val['_sa_instance_state']
-        del val["resource_id"]
-        del val["user_id"]
-        results.append(val)
-
-    return jsonify(results)
+    allAsked = db.session.query(AskedCourse).filter(AskedCourse.approved_date==None).all()
+    schema = AskedCourseSchema(many=True)
+    return jsonify(schema.dump(allAsked))
 
 @course_bp.route("/ask", methods=["POST"])
 @token_required
@@ -70,7 +61,7 @@ def ask_course(f):
     try:
         data = request.json
         askCourse = AskedCourse(
-            resource_id = data['resourceId'],
+            resource_id = data['resource_id'],
             duration = data['duration'],
             remote = data['remote'],
             date = datetime.strptime(data['date'], '%d/%m/%Y %H:%M'),
@@ -82,7 +73,6 @@ def ask_course(f):
 
         return make_response(jsonify({'message': 'Success'}), 200)
     except Exception as e:
-        print(e)
         return make_response(jsonify({'message': 'Error'}), 500)
     
 @course_bp.route("/accept/<id>", methods=["POST"])
@@ -177,3 +167,4 @@ def unregister_course(f, id):
     except Exception as e:
         print(e)
         return make_response(jsonify({'message': 'Error'}), 500)
+    

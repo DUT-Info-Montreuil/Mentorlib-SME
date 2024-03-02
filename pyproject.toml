@@ -1,6 +1,6 @@
 [project]
 name = "mentorlib-sme"
-version = "0.0.0"
+version = "0.1.0"
 description = "Backend of Mentorlib"
 authors = [
     {name = "Kamel OURZIK"},
@@ -14,6 +14,10 @@ dependencies = [
   "flask", 
   "flask_restful",
   "flask_cors", 
+  "flask_mail",
+  "flask_jwt_extended",
+  "flask_rq2",
+  "flask_caching",
   "psycopg2", 
   "config", 
   "requests",  
@@ -22,21 +26,24 @@ dependencies = [
   "flask_sqlalchemy",
   "PyJWT",
   "flask_migrate",
-  "flask_expects_json"
+  "flask_expects_json",
+  "setuptools",
+  "marshmallow_sqlalchemy",
+  "alembic"
   ]
 
 [project.optional-dependencies]
-dev = []
-
-tests = [
+dev = [
+    "pytest==7.4.3",
     "bandit[toml]==1.7.4",
     "black==22.10.0",
     "coverage[toml]==7.2.6",
     "pycodestyle==2.10.0",
     "pylint>=2.15.16",]
 
+
 [tool.black]
-line-length = 200
+line-length = 120
 target-version = ['py37']
 include = '\.pyi?$'
 exclude = ''
@@ -52,14 +59,14 @@ addopts = "-vv"
 
 [pycodestyle]
 count = true
-max-line-length = 200
+max-line-length = 120
 statistics = true
 
 [tool.pylint.main]
 ignore-paths = []
 
 [tool.pylint.format]
-max-line-length=200
+max-line-length=120
 
 [tool.pylint.reports]
 msg-template="{path}:{line}: [{msg_id}, {obj}] {msg} ({symbol})"
@@ -71,3 +78,6 @@ disable=[]
 [tool.bandit]
 targets = ["app"]
 exclude_dirs = []
+
+[tool.packages]
+include = [{from="src", include=["mentorlib_sme"]}]

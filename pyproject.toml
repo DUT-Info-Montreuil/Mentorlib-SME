@@ -29,7 +29,8 @@ dependencies = [
   "flask_expects_json",
   "setuptools",
   "marshmallow_sqlalchemy",
-  "alembic"
+  "alembic",
+  "pydantic_settings"
   ]
 
 [project.optional-dependencies]

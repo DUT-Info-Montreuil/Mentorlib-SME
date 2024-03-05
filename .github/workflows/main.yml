@@ -15,4 +15,4 @@ jobs:
         port: ${{ secrets.PORT }}
         command_timeout: 30m
         script: | 
-          echo ${{secrets.HOSTNAME}}
+          echo $HOSTNAME

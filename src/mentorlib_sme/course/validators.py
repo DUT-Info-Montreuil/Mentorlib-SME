@@ -7,7 +7,7 @@ addCourse = {
         "duration" : { 'type': 'integer' },
         "remote" : { 'type': 'boolean' }
     },
-    'required': []
+    'required': ['resource_id', 'date', 'remote', 'duration']
 }
 
 askCourse = {
@@ -19,5 +19,5 @@ askCourse = {
         "duration" : { 'type': 'integer' },
         "remote" : { 'type': 'boolean' },
     },
-    'required': []
+    'required': ['resource_id', 'date', 'remote', 'duration']
 }

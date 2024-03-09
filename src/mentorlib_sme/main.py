@@ -1,11 +1,11 @@
-from mentorlib_sme import app
+from mentorlib_sme import app, Base, db
 import click
 
 @click.command()
 @click.option("--debug", is_flag=True, help="Enable debug mode.")
 
 def main(debug):
-    app.run(debug=debug)
+    app.run(debug=debug, host="0.0.0.0")
 
 if __name__ == "__main__":
     main()

@@ -14,6 +14,7 @@ class User(Base):
     is_mentor = db.Column(db.Boolean, default=False)
 
     courses = db.relationship("Course", back_populates="user")
+    asked_courses = db.relationship("AskedCourse", back_populates="user")
     course_registered_users = db.relationship("CourseRegisteredUser", back_populates="user")
 
 

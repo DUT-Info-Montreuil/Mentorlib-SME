@@ -6,7 +6,7 @@ from mentorlib_sme.user.models import User
 from datetime import datetime, timedelta
 import jwt
 from flask_expects_json import expects_json, ValidationError
-from mentorlib_sme.user.validators import userlogin, userupdate, userupdatepassword
+from mentorlib_sme.user.validators import userlogin, userupdate, userupdatepassword, userregister
 
 user_bp = Blueprint("user", __name__, url_prefix="/user")
 
@@ -32,10 +32,8 @@ def login():
     try:
         user = db.session.query(User).filter_by(email=g.data.get("email")).first()
         if not user:
-            return make_response(
-                jsonify({"message": "Could not verify"}), 401, {"WWW-Authenticate": 'Basic realm ="User does not exist'}
-            )
-
+            return make_response(jsonify({"message": "Wrong login or password"}), 401)
+        
         if check_password_hash(user.password, g.data.get("password")):
             # generates the JWT Token
             token = jwt.encode(
@@ -53,18 +51,17 @@ def login():
             jsonify({"message": "Could not verify"}), 403, {"WWW-Authenticate": 'Basic realm ="Wrong Password"'}
         )
     except ValidationError as ve:
-        return make_response(
-            jsonify({"message": "Could not verify"}), 401, {"WWW-Authenticate": 'Basic realm ="Login required"'}
-        )
+        return make_response(jsonify({"message": "Wrong login or password"}), 401)
 
-
-@user_bp.route("/register", methods=["POST"])
-@expects_json(userlogin)
+@user_bp.route('/register', methods=['POST'])
+@expects_json(userregister)
 def register():
 
-    email = g.data.get("email")
-    password = g.data.get("password")
-
+    email = g.data.get('email')
+    password = g.data.get('password')
+    firstname = g.data.get('firstname')
+    lastname = g.data.get('lastname')
+  
     # checking for existing user
     user = db.session.query(User).filter_by(email=email).first()
     if not user:
@@ -72,7 +69,13 @@ def register():
         if not password or not email:
             return make_response("Password and email are required.", 400)
         else:
-            user = User(public_id=str(uuid.uuid4()), email=email, password=generate_password_hash(password))
+            user = User(
+                public_id = str(uuid.uuid4()),
+                email = email,
+                firstname = firstname,
+                lastname = lastname,
+                password = generate_password_hash(password)
+            )
             # insert user
             db.session.add(user)
             db.session.commit()

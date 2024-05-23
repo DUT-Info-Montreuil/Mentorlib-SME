@@ -1,6 +1,6 @@
 from marshmallow_sqlalchemy import SQLAlchemyAutoSchema,fields
 
-from mentorlib_sme.course.models import Course, AskedCourse, Resource, CourseRegisteredUser
+from mentorlib_sme.course.models import Course, AskedCourse, Resource, CourseRegisteredUser, Comments
 from mentorlib_sme.user.schemas import UserSchema
 
 class ResourceSchema(SQLAlchemyAutoSchema):
@@ -32,6 +32,14 @@ class AskedCourseSchema(SQLAlchemyAutoSchema):
 class CourseRegisteredUserSchema(SQLAlchemyAutoSchema):
     class Meta:
         model = CourseRegisteredUser
+        include_relationships = True
+        load_instance = True
+
+    user = fields.Nested(UserSchema)
+
+class CourseCommentSchema(SQLAlchemyAutoSchema):
+    class Meta:
+        model = Comments
         include_relationships = True
         load_instance = True
 

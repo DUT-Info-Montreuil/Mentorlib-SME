@@ -1,12 +1,14 @@
-from mentorlib_sme import app, db, token_required
+from mentorlib_sme import app, db, token_required, admin
 import uuid
 from flask import jsonify, request, make_response, g, Blueprint
 from werkzeug.security import generate_password_hash, check_password_hash
-from mentorlib_sme.user.models import User
+from mentorlib_sme.user.models import User, UserNote
+from mentorlib_sme.course.models import Course
 from datetime import datetime, timedelta
 import jwt
 from flask_expects_json import expects_json, ValidationError
 from mentorlib_sme.user.validators import userlogin, userupdate, userregister
+from mentorlib_sme.user.schemas import UserNoteSchema
 
 user_bp = Blueprint('user', __name__, url_prefix='/user')
 
@@ -20,6 +22,7 @@ def index(f):
         'lastname' : f.lastname,
         'student_year' : f.student_year,
         'is_mentor' : f.is_mentor,
+        'is_admin' : f.is_admin or False,
         'id': f.id
     })
 
@@ -86,7 +89,7 @@ def register():
 @user_bp.route("/profile/update", methods=["PUT"])
 @token_required
 @expects_json(userupdate)  # Assure que les données JSON attendues sont présentes dans la requête
-def update_profile(current_user):
+def update_profile(f, current_user):
     """Mise à jour du profil utilisateur"""
     try:
 
@@ -106,3 +109,129 @@ def update_profile(current_user):
 
     except ValidationError:
         return make_response(jsonify({"message": "Could not update profile"}), 400)
+    
+@user_bp.route("/profile/<id>", methods=["GET"])
+def get_profile(id):
+    """Récupère les informations du profil utilisateur"""
+    try:
+        user = db.session.query(User).filter_by(id=id).first()
+        if not user:
+            return make_response(jsonify({"message": "User not found"}), 404)
+
+        nb_courses = db.session.query(Course).filter_by(user_id=id).count()
+        return jsonify({
+            "id": user.id,
+            "email": user.email,
+            "firstname": user.firstname,
+            "lastname": user.lastname,
+            "student_year": user.student_year,
+            "nb_courses": nb_courses,
+        })
+
+    except Exception as e:
+        return make_response(jsonify({"message": "Error"}), 500)
+    
+@user_bp.route("/profile/<id>/notes", methods=["GET"])
+
+def get_user_notes(id):
+    """Récupère les informations du profil utilisateur"""
+    try:
+        user = db.session.query(User).filter_by(id=id).first()
+        if not user:
+            return make_response(jsonify({"message": "User not found"}), 404)
+
+        nb_courses = db.session.query(Course).filter_by(user_id=id).count()
+        return jsonify({
+            "id": user.id,
+            "email": user.email,
+            "firstname": user.firstname,
+            "lastname": user.lastname,
+            "student_year": user.student_year,
+            "nb_courses": nb_courses,
+        })
+
+    except Exception as e:
+        return make_response(jsonify({"message": "Error"}), 500)
+    
+@user_bp.route("/profile/<id>/notes/<resource_id>", methods=["GET"])
+@token_required
+def get_user_note(f, id, resource_id):
+    """Récupère les informations du profil utilisateur"""
+    try:
+        user = db.session.query(User)\
+        .filter_by(id=id)\
+        .first()
+
+        if not user:
+            return make_response(jsonify({"message": "User not found"}), 404)
+
+        notes = db.session.query(UserNote)\
+        .filter_by(user_id=id, resource_id=resource_id)
+
+        schema = UserNoteSchema(many=True)
+
+        return jsonify(schema.dump(notes))
+        
+
+    except Exception as e:
+        print(e)
+        return make_response(jsonify({"message": "Error"}), 500)
+    
+@user_bp.route("/profile/<id>/notes/<resource_id>", methods=["POST"])
+@token_required
+def add_user_note(f, id, resource_id):
+    try:
+        user = db.session.query(User)\
+        .filter_by(id=id)\
+        .first()
+
+        
+        if not user:
+            return make_response(jsonify({"message": "User not found"}), 404)
+        
+        data = request.json
+        
+        note = UserNote(
+            user_id=id,
+            note=data["note"],
+            resource_id=resource_id,
+            mentor_id= f.id
+        )
+
+        db.session.add(note)
+        db.session.commit()
+
+        return make_response("Successfully added note.", 201)
+        
+
+    except Exception as e:
+        print("exception", e.__traceback__)
+        return make_response(jsonify({"message": "Error"}), 500)
+    
+@user_bp.route("/profile/<id>/notes/<resource_id>/<note_id>", methods=["DELETE"])
+@token_required
+def delete_user_note(f, id, resource_id, note_id):
+    try:
+        user = db.session.query(User)\
+        .filter_by(id=id)\
+        .first()
+
+        if not user:
+            return make_response(jsonify({"message": "User not found"}), 404)
+        
+        note = db.session.query(UserNote)\
+        .filter_by(user_id=id, id=note_id, resource_id=resource_id)\
+        .first()
+
+        if not note:
+            return make_response(jsonify({"message": "Note not found"}), 404)
+        else:
+            db.session.delete(note)
+            db.session.commit()
+
+        return make_response("Successfully added note.", 201)
+        
+
+    except Exception as e:
+        print("exception", e.__traceback__)
+        return make_response(jsonify({"message": "Error"}), 500)

@@ -1,5 +1,5 @@
 from flask import jsonify, request, make_response, g, Blueprint
-from mentorlib_sme import db, token_required
+from mentorlib_sme import db, token_required, admin
 from sqlalchemy import and_
 from flask_expects_json import expects_json, ValidationError
 from mentorlib_sme.course.validators import askCourse
@@ -31,7 +31,6 @@ def course(id):
     .first()
 
     schema = CourseSchema(many=False)
-
 
     return jsonify(schema.dump(allCourses))
 
@@ -73,6 +72,7 @@ def ask_course(f):
 
         return make_response(jsonify({'message': 'Success'}), 200)
     except Exception as e:
+        print(e)
         return make_response(jsonify({'message': 'Error'}), 500)
     
 @course_bp.route("/accept/<id>", methods=["POST"])
@@ -167,4 +167,44 @@ def unregister_course(f, id):
     except Exception as e:
         print(e)
         return make_response(jsonify({'message': 'Error'}), 500)
+
+@course_bp.route("/status/<id>", methods=["PATCH"])
+@token_required
+def update_course_status(f, id):
+    try:
+        data = request.json
+
+        course = db.session.query(Course)\
+        .filter(and_(Course.id == id, Course.user_id == f.id))\
+        .first()
+
+        course.status = data['status']
+        db.session.commit()
+
+        return make_response(jsonify({'message': 'Success'}), 200)
+    except Exception as e:
+        print(e)
+        return make_response(jsonify({'message': 'Error'}), 500)
+
+
+@course_bp.route("/<id>", methods=["PATCH"])
+@token_required
+def update_course(f, id):
+    try:
+        course = db.session.query(Course)\
+        .filter_by(id = id)\
+        .first()
+
+        if course:
+            data = request.json
+            for key in Course.__table__.columns.keys():
+                if key != "id" and key in data:
+                    print(key)
+                    setattr(course, key, data.get(key))
     
+            db.session.commit()
+        
+        return make_response(jsonify({'message': 'Success'}), 200)
+    except Exception as e:
+        print(e)
+        return make_response(jsonify({'message': 'Error'}), 500)

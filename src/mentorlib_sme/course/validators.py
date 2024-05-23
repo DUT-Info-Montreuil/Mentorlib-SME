@@ -21,3 +21,7 @@ askCourse = {
     },
     'required': ['resource_id', 'date', 'remote', 'duration']
 }
+
+patch_resource = {
+    
+}

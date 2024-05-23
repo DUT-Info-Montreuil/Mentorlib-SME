@@ -1,6 +1,6 @@
 from mentorlib_sme import db,Base
 from sqlalchemy.orm import backref
-
+from datetime import datetime
 class Course(Base):
     __tablename__ = 'course'
 
@@ -10,6 +10,8 @@ class Course(Base):
     date = db.Column(db.DateTime)
     duration = db.Column(db.Integer)
     remote = db.Column(db.Boolean, default=False)
+    description = db.Column(db.String(255))
+    status = db.Column(db.Integer, default=0)
     
     resource = db.relationship("Resource", backref=backref("courses", lazy='dynamic'))
     user = db.relationship("User", back_populates="courses")
@@ -34,10 +36,10 @@ class Resource(Base):
     __tablename__ = 'resource'
     
     id = db.Column(db.Integer, primary_key=True)
-    shortname = db.Column(db.String(10))
+    number = db.Column(db.Integer, default=0)
     name = db.Column(db.String(80))
     description = db.Column(db.String(255))
-    year = db.Column(db.Integer)
+    semester = db.Column(db.Integer, default=1)
     banner = db.Column(db.String(255))
 
 
@@ -50,3 +52,13 @@ class CourseRegisteredUser(Base):
 
     course = db.relationship("Course", back_populates="course_registered_users")
     user = db.relationship("User", back_populates="course_registered_users")
+
+class Comments(Base):
+    __tablename__ = "comments"
+
+    id = db.Column(db.Integer, primary_key=True)
+    course_id = db.Column(db.Integer, db.ForeignKey('course.id'))
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    comment = db.Column(db.String(255))
+    date = db.Column(db.DateTime, default=datetime.utcnow)
+    user = db.relationship("User", back_populates="comments")

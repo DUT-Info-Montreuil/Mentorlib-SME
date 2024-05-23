@@ -25,9 +25,8 @@ from mentorlib_sme.course.models import Course, AskedCourse, Resource, CourseReg
 
 @app.after_request
 def after_request(response):
-    response.headers.add("Access-Control-Allow-Origin", "*")
     response.headers.add("Access-Control-Allow-Headers", "Content-Type,Authorization")
-    response.headers.add("Access-Control-Allow-Methods", "GET,PUT,POST,DELETE")
+    response.headers.add("Access-Control-Allow-Methods", "GET,PUT,POST,DELETE,PATCH")
     return response
 
 
@@ -57,17 +56,45 @@ def token_required(f):
         except:
             return jsonify({"message": "Token is invalid !!"}), 401
         # returns the current logged in users context to the routes
-        print(current_user)
         return f(current_user, *args, **kwargs)
 
     return decorated
 
+def admin(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        user = args[0]
+
+        if user.is_admin:
+            return f(*args, **kwargs)
+        else:
+            return jsonify({"message": "You are not an admin"}), 403
+
+        
+    return decorated
+
+def mentor(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        user = args[0]
+
+        if user.is_mentor:
+            return f(*args, **kwargs)
+        else:
+            return jsonify({"message": "You are not a mentor"}), 403
+
+        
+    return decorated
 
 from mentorlib_sme.routes.user import user_bp
 from mentorlib_sme.routes.course import course_bp
+from mentorlib_sme.routes.admin import admin_bp
+from mentorlib_sme.routes.comment import comments_bp
 
 app.register_blueprint(user_bp)
 app.register_blueprint(course_bp)
+app.register_blueprint(admin_bp)
+app.register_blueprint(comments_bp)
 
 with app.app_context():
     Base.metadata.create_all(db.engine)
